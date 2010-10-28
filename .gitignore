@@ -1,0 +1,11 @@
+deps/
+reddit/*.r
+reddit/*.dump
+reddit/*.pig
+reddit/*.pyc
+reddit/*.bz2
+rel/gain
+*.beam
+*~
+/apps/gain/ebin/dataminerl.app
+
