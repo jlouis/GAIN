@@ -7,12 +7,15 @@
 %%%-------------------------------------------------------------------
 -module(gain_kmeans).
 
+-include("log.hrl").
+
 %% API
 -export([kmeans/2]).
 
 %% Internal
 -export([map_get_dimension_names/3, red_set_union/2]).
 
+-define(STOP_EPSILON, 0.1). %% Rather arbitrary at the moment
 %%====================================================================
 %% API
 %%====================================================================
@@ -48,9 +51,24 @@ initialize_clusters(Bucket, N) ->
     create_clusters(N, Dimensions).
 
 kmeans_iterate(Bucket, Clusters, N) when length(Clusters) < N ->
+    %% If nobody are sorted into a cluster, reset it and try again
     NewCls = create_clusters(Bucket, N - length(Clusters)),
     kmeans_iterate(Bucket, NewCls ++ Clusters, N);
-kmeans_iterate(_Bucket, _Clusters, _N) ->
+kmeans_iterate(Bucket, Clusters, N) ->
+    NewClusters = kmeans_step(Bucket, Clusters),
+    case kmeans_difference(Clusters, NewClusters, 0) of
+	F when F < ?STOP_EPSILON ->
+	    NewClusters;
+	F ->
+	    ?DEBUG([iterating, {distance, F}]),
+	    kmeans_iterate(Bucket, NewClusters, N)
+    end.
+
+kmeans_difference([], [], Diff) -> Diff;
+kmeans_difference([{_, D1} | R1], [{_, D2} | R2], Diff) ->
+    kmeans_difference(R1, R2, Diff + abs(D1 - D2)).
+
+kmeans_step(_Bucket, _Clusters) ->
     todo.
 
 find_dimensions(Bucket) ->
