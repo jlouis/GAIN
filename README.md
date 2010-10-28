@@ -44,8 +44,12 @@ run
      rel/gain/erts-<vsn>/bin/erl -pa apps/gain/ebin
 
 giving you an erlang containing the gain application as well as the
-riakc protocol buffers client. At this point, try to execute the
-command
+riakc protocol buffers client. The '-pa' addition of the ebin path is
+not strictly necessary, but it makes it easier to 'l(Mod)' from the
+shell to get the latest version of a module when you compile it in the
+app.
+
+At this point, try to execute the command
 
      reddit_rec:read_file("reddit/affinities.erl.dump").
 
