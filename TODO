@@ -1,7 +1,11 @@
-* Get rebar config and a hook to the erlang-riak-client
-* Write a simple reader for the file on disk
-* Simplify keys used by riak
-* Store affinity data into riak
 
-* Think about how to write M/R for KMeans in M/R-Erlang.
+* Writer the M/R phases of (non-spherical k-means)
+   Make ze plans for how to do map/reduce correctly for a K-means
+   variant in Erlang.
+
+* Make sure that the current documentation is adequate
+   Developers, developers, developers. Get more people to work on this
+   and make sure that the current documentation is enough to get them
+   started.
+
 
