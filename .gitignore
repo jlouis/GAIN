@@ -7,5 +7,4 @@ reddit/*.bz2
 rel/gain
 *.beam
 *~
-/apps/gain/ebin/dataminerl.app
-
+/apps/gain/ebin/gain.app
