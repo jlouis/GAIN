@@ -20,26 +20,46 @@
 %%====================================================================
 %% API
 %%====================================================================
+
+%% @doc Run (Voronoi-)k-means on Bucket through connection C with N clusters.
+%% @end
 -type kmeans_vector() :: [{binary(), float()}].
 -spec kmeans(pid(), binary(), integer()) -> kmeans_vector().
 kmeans(C, Bucket, N) ->
     Clusters = initialize_clusters(Bucket, N),
     kmeans_iterate(C, Bucket, Clusters, N).
 
+%% @doc For a row Object, return the column names for that row
+%%  Select the column names and return them as a set
+%% @end
 map_get_dimension_names(Obj, _, _) ->
     L = binary_to_term(riak_object:get_value(Obj)),
     Dims = [D || {D, _} <- L],
     [sets:from_list(Dims)].
 
+%% @doc Find the Cluster an Obj belongs to
+%%  Assume that the object contains a sparse vector of affinities.
+%%  then this map finds the cluster nearest to the Obj. The function will
+%%  return a singleton list with the cluster number, a count of one and the
+%%  vector for the object.
+%% @end
 map_sort_vector(Obj, _, Clusters) ->
     Vec = binary_to_term(riak_object:get_value(Obj)),
     N = find_nearest_cluster(Vec, Clusters),
     [{N, 1, Vec}]. % Tell that we are in cluster N
 
+%% @doc Gather Objects into Clusters
+%%  Given a list of Objects with their Cluster Numbers designated,
+%%  reduce them by combining vectors in the same cluster. Returns the
+%%  combined clusters with their count so the next cluster iteration can
+%%  be calculated.
+%% @end
 red_calc_new_clusters(L, _) ->
     Sorted = lists:keysort(1, L),
     fold_clusters(Sorted).
 
+%% @doc Union a List of sets
+%% @end
 red_set_union(List, _) ->
     Union = sets:union(List),
     [Union].
