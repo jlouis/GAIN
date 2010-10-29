@@ -56,3 +56,32 @@ At this point, try to execute the command
 in the erlang shell to dump the reddit data in a bucket
 <<"affinities">> inside riak. At the moment, this where we are.
 
+# K-Means
+
+We have a preliminary implementation of a (Voronoi-) K-means
+algorithm. We assume that a bucket 'B' exists. 'B' contains '{K, V}'
+objects where 'K' is a row name designator and 'V' is a sparse vector
+stored as a list '[{name(), float()}]' where we name each dimension
+and supply a floating point value in the range '-1' to '1'.
+
+K-means then run in a step-iteration
+[algorithm](http://en.wikipedia.org/wiki/K-means_clustering#Standard_algorithm)
+based upon the idea of
+[Lloyd](http://en.wikipedia.org/wiki/Lloyd's_algorithm). Note that the
+first step is to sort each '{K, V}' pair into the cluster closest to
+the pair. The second step is to calculate a new mean for the cluster
+based upon its members.
+
+The first step is a map in a Map/Reduce implementation: Simply for
+each pair, check all clusters and report the one it is closest to. The
+second step is a reduce step: Gather up elements belonging to each
+cluster and calculate the mean. Note that several nice properties of
+the mean w.r.t. commutativity make it possible to form a reduction
+tree.
+
+Finally, to initialize the algorithm, produce K clusters by randomly
+assigning values in the N-dimenional space I^N where I is the interval
+[-1:1]. Iterate until the K clusters differ from the earlier iteration
+by a value less than some small epsilon.
+
+This idea has been implemented in 'gain_kmeans.erl'.
