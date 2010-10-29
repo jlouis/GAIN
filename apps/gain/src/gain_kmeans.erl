@@ -16,6 +16,9 @@
 -export([map_get_dimension_names/3, red_set_union/2,
 	 map_sort_vector/3, red_calc_new_clusters/2]).
 
+-export([kmeans_step/3]).
+-compile(export_all).
+
 -define(STOP_EPSILON, 0.1). %% Rather arbitrary at the moment
 %%====================================================================
 %% API
@@ -43,7 +46,10 @@ map_get_dimension_names(Obj, _, _) ->
 %%  return a singleton list with the cluster number, a count of one and the
 %%  vector for the object.
 %% @end
-map_sort_vector(Obj, _, Clusters) ->
+map_sort_vector(Obj, Cls) ->
+    map_sort_vector(Obj, undefined, Cls).
+
+map_sort_vector(Obj, _, [Clusters]) ->
     Vec = binary_to_term(riak_object:get_value(Obj)),
     N = find_nearest_cluster(Vec, Clusters),
     [{N, 1, Vec}]. % Tell that we are in cluster N
@@ -142,12 +148,13 @@ kmeans_iterate(C, Bucket, Clusters, N) when length(Clusters) < N ->
     NewCls = create_clusters(Bucket, N - length(Clusters)),
     kmeans_iterate(C, Bucket, NewCls ++ Clusters, N);
 kmeans_iterate(C, Bucket, Clusters, N) ->
-    NewClusters = kmeans_step(C, Bucket, Clusters),
+    {T, NewClusters} =
+	timer:tc(gain_kmeans, kmeans_step, [C, Bucket, Clusters]),
     case kmeans_difference(Clusters, NewClusters) of
 	F when F < ?STOP_EPSILON ->
 	    NewClusters;
 	F ->
-	    ?DEBUG([iterating, {distance, F}]),
+	    ?DEBUG([iterating, [{time, T / (1000*1000)}, {distance, F}]]),
 	    kmeans_iterate(C, Bucket, NewClusters, N)
     end.
 
