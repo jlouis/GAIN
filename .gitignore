@@ -8,3 +8,6 @@ rel/gain
 *.beam
 *~
 /apps/gain/ebin/gain.app
+/reddit/affinities.clabel
+/reddit/affinities.cm
+/reddit/affinities.rlabel
