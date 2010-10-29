@@ -34,10 +34,11 @@ map_get_dimension_names(Obj, _, _) ->
 map_sort_vector(Obj, _, Clusters) ->
     Vec = binary_to_term(riak_object:get_value(Obj)),
     N = find_nearest_cluster(Vec, Clusters),
-    [{N, Vec}]. % Tell that we are in cluster N
+    [{N, 1, Vec}]. % Tell that we are in cluster N
 
-red_calc_new_clusters(_Sorted, _Clusters) ->
-    todo.
+red_calc_new_clusters(L, _) ->
+    Sorted = lists:keysort(1, L),
+    fold_clusters(Sorted).
 
 red_set_union(List, _) ->
     Union = sets:union(List),
@@ -46,6 +47,25 @@ red_set_union(List, _) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
+sum_vec([{K1, V1} | R1], [{K2, V2} | R2])
+  when K1 == K2 ->
+    [{K1, V1 + V2} | sum_vec(R1, R2)];
+sum_vec([{K1, V1} | R1], [{K2, V2} | R2])
+  when K1 < K2 ->
+    [{K1, V1} | sum_vec(R1, [{K2, V2} | R2])];
+sum_vec([{K1, V1} | R1], [{K2, V2} | R2])
+  when K1 > K2 ->
+    [{K2, V2} | sum_vec([{K1, V1} | R1], R2)].
+
+fold_clusters([]) -> [];
+fold_clusters([X]) -> [X];
+fold_clusters([{CLNo, Count, Vec}, {CLNo2, Count2, Vec2} | Rest])
+  when CLNo == CLNo2 ->
+    fold_clusters([{CLNo, Count + Count2, sum_vec(Vec, Vec2)} | Rest]);
+fold_clusters([{CLNo, Count, Vec}, {CLNo2, Count2, Vec2} | Rest])
+  when CLNo =/= CLNo2 ->
+    [{CLNo, Count, Vec} | fold_clusters([{CLNo2, Count2, Vec2} | Rest])].
+
 find_nearest_cluster(Vec, [C | Clusters]) ->
     D = euclidian_distance(Vec, C),
     find_nearest_cluster(Vec, Clusters, 1, {0, D}).
