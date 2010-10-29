@@ -62,7 +62,9 @@ We have a preliminary implementation of a (Voronoi-) K-means
 algorithm. We assume that a bucket 'B' exists. 'B' contains '{K, V}'
 objects where 'K' is a row name designator and 'V' is a sparse vector
 stored as a list '[{name(), float()}]' where we name each dimension
-and supply a floating point value in the range '-1' to '1'.
+and supply a floating point value in the range '-1' to '1'. Note that
+we take as a 'precondition' that the names are ''ordered'' according
+to the Erlang standard ordering operator '<'.
 
 K-means then run in a step-iteration
 [algorithm](http://en.wikipedia.org/wiki/K-means_clustering#Standard_algorithm)
