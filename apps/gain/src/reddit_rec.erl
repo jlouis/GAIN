@@ -8,7 +8,7 @@
 -module(reddit_rec).
 
 %% API
--export([read_file/1]).
+-export([read_file/1, kmeans/0]).
 
 -define(BUCKET, <<"affinities">>).
 
@@ -24,6 +24,10 @@ read_file(FName) ->
     process_lines(RC, "foo", [{fake, {0,0}}], IO),
     riakc_pb_socket:delete(RC, ?BUCKET, <<"foo">>),
     ok.
+
+kmeans() ->
+    {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
+    gain_kmeans:kmeans(RC, <<"affinities">>, 50).
 
 skew([]) -> [];
 skew([{_SubReddit, {Ups, Downs}} | Rest]) when Ups + Downs < 3 -> skew(Rest);
