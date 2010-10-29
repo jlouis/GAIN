@@ -47,6 +47,11 @@ red_set_union(List, _) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
+
+%% @doc Sum two sparse vectors
+%%  given as {D, V} pairs, where D is the the dimension name and V is the
+%%  sum of that dimension.
+%% @end
 sum_vec([{K1, V1} | R1], [{K2, V2} | R2])
   when K1 == K2 ->
     [{K1, V1 + V2} | sum_vec(R1, R2)];
@@ -142,7 +147,11 @@ kmeans_step(C, Bucket, Clusters) ->
     step_post_process(NewClusters).
 
 step_post_process(NewClusters) ->
-    NewClusters.
+    NC = lists:keysort(1, NewClusters),
+    F = fun(Count, Vec) ->
+		[V / Count || V <- Vec]
+	end,
+    [F(Cnt, Vec) || {_, Cnt, Vec} <- NC].
 
 find_dimensions(Bucket) ->
     {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
