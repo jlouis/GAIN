@@ -59,18 +59,18 @@ in the erlang shell to dump the reddit data in a bucket
 # K-Means
 
 We have a preliminary implementation of a (Voronoi-) K-means
-algorithm. We assume that a bucket 'B' exists. 'B' contains '{K, V}'
-objects where 'K' is a row name designator and 'V' is a sparse vector
-stored as a list '[{name(), float()}]' where we name each dimension
-and supply a floating point value in the range '-1' to '1'. Note that
-we take as a 'precondition' that the names are ''ordered'' according
-to the Erlang standard ordering operator '<'.
+algorithm. We assume that a bucket 'B' exists. *B* contains *{K, V}*
+objects where *K* is a row name designator and *V* is a sparse vector
+stored as a list *[{name(), float()}]* where we name each dimension
+and supply a floating point value in the range *-1* to *1*. Note that
+we take as a *precondition* that the names are **ordered** according
+to the Erlang standard ordering operator *<*.
 
 K-means then run in a step-iteration
 [algorithm](http://en.wikipedia.org/wiki/K-means_clustering#Standard_algorithm)
 based upon the idea of
 [Lloyd](http://en.wikipedia.org/wiki/Lloyd's_algorithm). Note that the
-first step is to sort each '{K, V}' pair into the cluster closest to
+first step is to sort each *{K, V}* pair into the cluster closest to
 the pair. The second step is to calculate a new mean for the cluster
 based upon its members.
 
@@ -86,4 +86,4 @@ assigning values in the N-dimenional space I^N where I is the interval
 [-1:1]. Iterate until the K clusters differ from the earlier iteration
 by a value less than some small epsilon.
 
-This idea has been implemented in 'gain_kmeans.erl'.
+This idea has been implemented in *gain_kmeans.erl*.
