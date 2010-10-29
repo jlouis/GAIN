@@ -123,7 +123,7 @@ kmeans_iterate(C, Bucket, Clusters, N) when length(Clusters) < N ->
     kmeans_iterate(C, Bucket, NewCls ++ Clusters, N);
 kmeans_iterate(C, Bucket, Clusters, N) ->
     NewClusters = kmeans_step(C, Bucket, Clusters),
-    case kmeans_difference(Clusters, NewClusters, 0) of
+    case kmeans_difference(Clusters, NewClusters) of
 	F when F < ?STOP_EPSILON ->
 	    NewClusters;
 	F ->
@@ -131,9 +131,8 @@ kmeans_iterate(C, Bucket, Clusters, N) ->
 	    kmeans_iterate(C, Bucket, NewClusters, N)
     end.
 
-kmeans_difference([], [], Diff) -> Diff;
-kmeans_difference([{_, D1} | R1], [{_, D2} | R2], Diff) ->
-    kmeans_difference(R1, R2, Diff + abs(D1 - D2)).
+kmeans_difference(Old, New) ->
+    lists:sum([euclidian_distance(V1, V2) || {V1, V2} <- lists:zip(Old, New)]).
 
 kmeans_step(C, Bucket, Clusters) ->
     {ok, [{1, NewClusters}]} =
