@@ -1,6 +1,9 @@
-.PHONY: rel deps all compile clean disclean test rel relclean run
+.PHONY: rel deps all compile clean disclean test rel relclean run dialyze
 
 all: compile
+
+dialyze:
+	./rebar dialyze
 
 compile:
 	./rebar compile
