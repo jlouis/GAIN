@@ -191,4 +191,12 @@ find_dimensions(Bucket) ->
 	    undefined, true}]),
     lists:sort(sets:to_list(Set)).
 
+%% ----------------------------------------------------------------------
 
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
+foo_test() ->
+    ?assertEqual(true, true).
+
+-endif.

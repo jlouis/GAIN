@@ -1,4 +1,4 @@
-.PHONY: rel deps all compile clean disclean test rel relclean run dialyze
+.PHONY: rel deps all compile clean disclean test rel relclean run dialyze eunit
 
 all: compile
 
@@ -28,3 +28,6 @@ relclean:
 
 run:
 	rel/dataminerl/erts-5.8.2/bin/erl -pa ebin
+
+eunit:
+	./rebar skip_deps=true eunit
