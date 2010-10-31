@@ -4,6 +4,55 @@
    system. From here, we need to run more tests to make sure it works
    as intended.
 
+* Kmeans clustering have some obvious errors currently:
+
+33> reddit_rec:kmeans().
+** exception error: no function clause matching lists:zip([[{"16bc0f795db02251a653bf94b3db0762",
+                                                             0.793846678},
+                                                            {"2f12fd663d39388c769302cec17191b2",
+                                                             -0.740527414},
+                                                            {"420db22867a99034b33f141b0ab940cc",
+                                                             0.816329166},
+                                                            {"b8bcd7f0cd60d4a8d23f359039ececb4",
+                                                             0.4338520859999999},
+                                                            {"ead58cad89d17eda727d2ca96bd5bfb7",
+                                                             0.3668801159999999},
+                                                            {"f05a7cf5bb58640cb26860d862414f52",
+                                                             0.932040786}]],
+                                                          [])
+in function  lists:zip/2
+in call from gain_kmeans:kmeans_difference/2
+in call from gain_kmeans:kmeans_iterate/4
+
+   This error is because we are calling zip with an empty list as one
+   of the parameters. We should fix this problem.
+
+32> reddit_rec:kmeans().
+
+=INFO REPORT==== 31-Oct-2010::21:26:27 ===
+    iterating
+    [{time,0.687642},{distance,6.601082051744993}]
+
+=INFO REPORT==== 31-Oct-2010::21:26:28 ===
+    iterating
+    [{time,1.27976},{distance,0.3526989999896304}]
+[[{"2f12fd663d39388c769302cec17191b2",0.5},
+  {"ead58cad89d17eda727d2ca96bd5bfb7",0.5}],
+ [{"16bc0f795db02251a653bf94b3db0762",1.0}],
+ [{"420db22867a99034b33f141b0ab940cc",-0.1},
+  {"b8bcd7f0cd60d4a8d23f359039ececb4",-0.08070175438596491},
+  {"f05a7cf5bb58640cb26860d862414f52",-0.9466666666666667}],
+ [{"16bc0f795db02251a653bf94b3db0762",0.037037037037037035},
+  {"420db22867a99034b33f141b0ab940cc",0.07407407407407407},
+  {"b8bcd7f0cd60d4a8d23f359039ececb4",0.037037037037037035},
+  {"f05a7cf5bb58640cb26860d862414f52",1.0}],
+ [{"b8bcd7f0cd60d4a8d23f359039ececb4",0.007792207792207792},
+  {"f05a7cf5bb58640cb26860d862414f52",6.184291898577602e-4}]]
+
+   This looks wrong as well. The 5 clusters are not at all
+   full-dimensional, and we should check out why. The code around
+   kmeans iteration could do with some help and review.
+
 * Look into implmenting canopy clustering
    Canopy clustering looks quite simple to implement. We should write
    an implementation of this.
