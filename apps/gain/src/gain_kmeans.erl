@@ -185,10 +185,12 @@ kmeans_step(C, Bucket, Clusters) ->
 	    undefined, true}]),
     step_post_process(NewClusters).
 
+-spec step_post_process([{integer(), integer(), kmeans_vector()}]) ->
+			       [{integer(), kmeans_vector()}].
 step_post_process(NewClusters) ->
     NC = lists:keysort(1, NewClusters),
     F = fun(Count, Vec) ->
-		[V / Count || V <- Vec]
+		[{D, V / Count} || {D, V} <- Vec]
 	end,
     [F(Cnt, Vec) || {_, Cnt, Vec} <- NC].
 
