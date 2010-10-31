@@ -3,7 +3,7 @@
 all: compile
 
 dialyze:
-	./rebar dialyze
+	./rebar skip_deps=true dialyze
 
 compile:
 	./rebar compile
