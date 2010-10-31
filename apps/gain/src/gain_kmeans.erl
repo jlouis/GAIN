@@ -61,8 +61,7 @@ map_sort_vector(Obj, _, [Clusters]) ->
 %%  be calculated.
 %% @end
 red_calc_new_clusters(L, _) ->
-    Sorted = lists:keysort(1, L),
-    fold_clusters(Sorted).
+    fold_clusters(L).
 
 %% @doc Union a List of sets
 %% @end
@@ -78,6 +77,7 @@ red_set_union(List, _) ->
 %%  given as {D, V} pairs, where D is the the dimension name and V is the
 %%  sum of that dimension.
 %% @end
+-spec sum_vec(kmeans_vector(A), kmeans_vector(A)) -> kmeans_vector(A).
 sum_vec([], Component2) -> Component2;
 sum_vec(Component1, []) -> Component1;
 sum_vec([{K1, V1} | R1], [{K2, V2} | R2])
@@ -90,14 +90,20 @@ sum_vec([{K1, V1} | R1], [{K2, V2} | R2])
   when K1 > K2 ->
     [{K2, V2} | sum_vec([{K1, V1} | R1], R2)].
 
-fold_clusters([]) -> [];
-fold_clusters([X]) -> [X];
-fold_clusters([{CLNo, Count, Vec}, {CLNo2, Count2, Vec2} | Rest])
+-spec fold_clusters([{integer(), integer(), kmeans_vector(A)}]) ->
+        	    [{integer(), integer(), kmeans_vector(A)}].
+fold_clusters(L) ->
+    Sorted = lists:keysort(1, L),
+    fold_clusters_sorted(Sorted).
+
+fold_clusters_sorted([]) -> [];
+fold_clusters_sorted([X]) -> [X];
+fold_clusters_sorted([{CLNo, Count, Vec}, {CLNo2, Count2, Vec2} | Rest])
   when CLNo == CLNo2 ->
-    fold_clusters([{CLNo, Count + Count2, sum_vec(Vec, Vec2)} | Rest]);
-fold_clusters([{CLNo, Count, Vec}, {CLNo2, Count2, Vec2} | Rest])
+    fold_clusters_sorted([{CLNo, Count + Count2, sum_vec(Vec, Vec2)} | Rest]);
+fold_clusters_sorted([{CLNo, Count, Vec}, {CLNo2, Count2, Vec2} | Rest])
   when CLNo =/= CLNo2 ->
-    [{CLNo, Count, Vec} | fold_clusters([{CLNo2, Count2, Vec2} | Rest])].
+    [{CLNo, Count, Vec} | fold_clusters_sorted([{CLNo2, Count2, Vec2} | Rest])].
 
 find_nearest_cluster(Vec, [C | Clusters]) ->
     D = euclidian_distance(Vec, C),
@@ -254,16 +260,16 @@ sum_vec_1_test() ->
     ?assertEqual([{1,2}, {2, -1}, {4,2}], sum_vec(Vec2, Vec4)),
     ?assertEqual([{1,2}, {2, -1}, {4,2}], sum_vec(Vec4, Vec2)).
 
-fold_clusters_1_test() ->
-    ?assertEqual([], fold_clusters([])),
+fold_clusters_sorted_1_test() ->
+    ?assertEqual([], fold_clusters_sorted([])),
     C1 = {1, 1, [{1,2}]},
-    ?assertEqual([C1], fold_clusters([C1])),
+    ?assertEqual([C1], fold_clusters_sorted([C1])),
     C2 = {1, 3, [{2,3}]},
-    ?assertEqual([{1, 4, [{1,2}, {2,3}]}], fold_clusters([C1, C2])),
+    ?assertEqual([{1, 4, [{1,2}, {2,3}]}], fold_clusters_sorted([C1, C2])),
     C3 = {2, 37, [{1,1},{2,4}]},
     CanonRes = [{1, 4, [{1,2}, {2,3}]}, C3],
-    ?assertEqual(CanonRes, fold_clusters([C1, C2, C3])),
-    RC = red_calc_new_clusters([C1, C3, C2], undefined),
+    ?assertEqual(CanonRes, fold_clusters_sorted([C1, C2, C3])),
+    RC = fold_clusters([C1, C3, C2]),
     ?assertEqual(CanonRes, RC).
 
 -endif.
