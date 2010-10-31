@@ -1,7 +1,7 @@
 .PHONY: all clean run-R
 
-SMALLCOUNT=30000
-VOTES=publicvotes-20101018_votes.dump
+SMALLCOUNT=1000
+VOTES=votes.dump
 
 all: affinities.erl.dump affinities.erl.small.dump
 
@@ -22,4 +22,5 @@ run-R:
 	time R -f ./srrecs.r
 
 clean:
-	rm -fr affinities.{dump,erl.dump,clabel,rlabel}
+	rm -fr affinities.dump affinities.erl.dump affinities.erl.small.dump \
+		affinities.clabel affinities.rlabel
