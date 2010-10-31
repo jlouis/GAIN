@@ -78,6 +78,8 @@ red_set_union(List, _) ->
 %%  given as {D, V} pairs, where D is the the dimension name and V is the
 %%  sum of that dimension.
 %% @end
+sum_vec([], Component2) -> Component2;
+sum_vec(Component1, []) -> Component1;
 sum_vec([{K1, V1} | R1], [{K2, V2} | R2])
   when K1 == K2 ->
     [{K1, V1 + V2} | sum_vec(R1, R2)];
@@ -117,7 +119,13 @@ euclidian_distance(Vec, Clus) ->
     math:sqrt(Q).
 
 euclidian_distance([], [], Q) -> Q;
-euclidian_distance([{C1, V1} | R1], [{C2, V2}, R2], Q)
+euclidian_distance([], [{_C2, V2} | R2], Q) ->
+    R = (0 - V2) * (0 - V2),
+    euclidian_distance([], R2, Q + R);
+euclidian_distance([{_C1, V1} | R1], [], Q) ->
+    R = (V1 - 0) * (V1 - 0),
+    euclidian_distance(R1, [], Q + R);
+euclidian_distance([{C1, V1} | R1], [{C2, V2} | R2], Q)
   when C1 == C2 ->
     R = (V1 - V2) * (V1 - V2),
     euclidian_distance(R1, R2, Q + R);
@@ -196,7 +204,57 @@ find_dimensions(Bucket) ->
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
 
-foo_test() ->
-    ?assertEqual(true, true).
+euclidian_dist_1_test() ->
+    Vec1 = [{1, 5}],
+    Vec2 = [],
+    ?assertEqual(euclidian_distance(Vec1, Vec2), 5.0).
+
+euclidian_dist_2_test() ->
+    Vec1 = [],
+    Vec2 = [{1, 1}, {2, 1}],
+    Vec3 = [{3, 2}, {4, 2}],
+    ?assertEqual(math:sqrt(2), euclidian_distance(Vec1, Vec2)),
+    ?assertEqual(math:sqrt(2), euclidian_distance(Vec2, Vec1)),
+    ?assertEqual(math:sqrt(1 + 1 + 2*2 + 2*2), euclidian_distance(Vec2, Vec3)),
+    ?assertEqual(math:sqrt(1 + 1 + 2*2 + 2*2), euclidian_distance(Vec3, Vec2)).
+
+create_cluster_1_test() ->
+    N = 3,
+    Cs = create_clusters(N, [1,2,3,4]),
+    ?assertEqual(length(Cs), 3),
+    ?assertEqual([length(X) || X <- Cs], [4,4,4]).
+
+find_nearest_cluster_1_test() ->
+    RandClusters = create_clusters(3, [1,2,3,4]),
+    Vec = [{1, 1}, {2, -1}, {4, 0.5}],
+    N = find_nearest_cluster(Vec, RandClusters ++ [Vec]),
+    ?assertEqual(N, 3),
+    N2 = find_nearest_cluster(Vec, [Vec | RandClusters]),
+    ?assertEqual(N2, 0).
+
+sum_vec_1_test() ->
+    Vec1 = [],
+    ?assertEqual(Vec1, sum_vec(Vec1, Vec1)),
+    Vec2 = [{1,1}, {2, -1}],
+    ?assertEqual(Vec2, sum_vec(Vec1, Vec2)),
+    ?assertEqual(Vec2, sum_vec(Vec2, Vec1)),
+    Vec3 = [{1,1}, {2, 1}],
+    ?assertEqual([{1,2}, {2,0}], sum_vec(Vec2, Vec3)),
+    ?assertEqual([{1,2}, {2,0}], sum_vec(Vec3, Vec2)),
+    Vec4 = [{1,1}, {4,2}],
+    ?assertEqual([{1,2}, {2, -1}, {4,2}], sum_vec(Vec2, Vec4)),
+    ?assertEqual([{1,2}, {2, -1}, {4,2}], sum_vec(Vec4, Vec2)).
+
+fold_clusters_1_test() ->
+    ?assertEqual([], fold_clusters([])),
+    C1 = {1, 1, [{1,2}]},
+    ?assertEqual([C1], fold_clusters([C1])),
+    C2 = {1, 3, [{2,3}]},
+    ?assertEqual([{1, 4, [{1,2}, {2,3}]}], fold_clusters([C1, C2])),
+    C3 = {2, 37, [{1,1},{2,4}]},
+    CanonRes = [{1, 4, [{1,2}, {2,3}]}, C3],
+    ?assertEqual(CanonRes, fold_clusters([C1, C2, C3])),
+    RC = red_calc_new_clusters([C1, C3, C2], undefined),
+    ?assertEqual(CanonRes, RC).
 
 -endif.
