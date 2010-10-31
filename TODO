@@ -1,11 +1,9 @@
 
-* Writer the M/R phases of (non-spherical k-means)
-   Make ze plans for how to do map/reduce correctly for a K-means
-   variant in Erlang.
+* Carry out testing of the k-means code
+   We now have some kmeans code, and a decent code coverage of the
+   system. From here, we need to run more tests to make sure it works
+   as intended.
 
-* Make sure that the current documentation is adequate
-   Developers, developers, developers. Get more people to work on this
-   and make sure that the current documentation is enough to get them
-   started.
-
-
+* Look into implmenting canopy clustering
+   Canopy clustering looks quite simple to implement. We should write
+   an implementation of this.
