@@ -56,6 +56,16 @@ At this point, try to execute the command
 in the erlang shell to dump the reddit data in a bucket
 <<"affinities">> inside riak. At the moment, this where we are.
 
+# Test cases
+
+We have a target for running test cases. At the moment, we are just
+using eunit tests in modules when we need to do some tests. The target
+to run is,
+
+   make eunit
+
+which will run all eunit tests.
+
 # K-Means
 
 We have a preliminary implementation of a (Voronoi-) K-means
