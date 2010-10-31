@@ -26,7 +26,7 @@
 
 %% @doc Run (Voronoi-)k-means on Bucket through connection C with N clusters.
 %% @end
--type kmeans_vector() :: [{binary(), float()}].
+-type kmeans_vector() :: [{term(), float()}].
 -spec kmeans(pid(), binary(), integer()) -> kmeans_vector().
 kmeans(C, Bucket, N) ->
     Clusters = initialize_clusters(Bucket, N),
@@ -114,6 +114,7 @@ find_nearest_cluster(Vec, [Clus | Rest], K, {N, D}) ->
     end.
 
 %% Discrete metric for now.
+-spec euclidian_distance(kmeans_vector(), kmeans_vector()) -> float().
 euclidian_distance(Vec, Clus) ->
     Q = euclidian_distance(Vec, Clus, 0),
     math:sqrt(Q).
@@ -166,9 +167,13 @@ kmeans_iterate(C, Bucket, Clusters, N) ->
 	    kmeans_iterate(C, Bucket, NewClusters, N)
     end.
 
+-spec kmeans_difference([kmeans_vector()],
+			[kmeans_vector()]) -> float().
 kmeans_difference(Old, New) ->
     lists:sum([euclidian_distance(V1, V2) || {V1, V2} <- lists:zip(Old, New)]).
 
+-spec kmeans_step(pid(), term(), [{integer(), kmeans_vector()}]) ->
+			 [{integer(), kmeans_vector()}].
 kmeans_step(C, Bucket, Clusters) ->
     {ok, [{1, NewClusters}]} =
 	riakc_pb_socket:mapred_bucket(
