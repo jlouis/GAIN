@@ -62,7 +62,7 @@ We have a target for running test cases. At the moment, we are just
 using eunit tests in modules when we need to do some tests. The target
 to run is,
 
-   make eunit
+     make eunit
 
 which will run all eunit tests.
 
