@@ -31,7 +31,7 @@ keys() ->
 
 kmeans() ->
     {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    gain_kmeans:kmeans(RC, ?BUCKET, 2).
+    gain_kmeans:kmeans(RC, ?BUCKET, 5).
 
 skew([]) -> [];
 skew([{_SubReddit, {Ups, Downs}} | Rest]) when Ups + Downs < 3 -> skew(Rest);
