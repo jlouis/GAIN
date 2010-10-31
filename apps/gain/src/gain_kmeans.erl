@@ -26,8 +26,8 @@
 
 %% @doc Run (Voronoi-)k-means on Bucket through connection C with N clusters.
 %% @end
--type kmeans_vector() :: [{term(), float()}].
--spec kmeans(pid(), binary(), integer()) -> kmeans_vector().
+-type kmeans_vector(A) :: [{A, float()}].
+-spec kmeans(pid(), binary(), integer()) -> kmeans_vector(term()).
 kmeans(C, Bucket, N) ->
     Clusters = initialize_clusters(Bucket, N),
     kmeans_iterate(C, Bucket, Clusters, N).
@@ -113,8 +113,8 @@ find_nearest_cluster(Vec, [Clus | Rest], K, {N, D}) ->
 	    find_nearest_cluster(Vec, Rest, K+1, {N, D})
     end.
 
-%% Discrete metric for now.
--spec euclidian_distance(kmeans_vector(), kmeans_vector()) -> float().
+%% Euclidian distance metric for now.
+-spec euclidian_distance(kmeans_vector(A), kmeans_vector(A)) -> float().
 euclidian_distance(Vec, Clus) ->
     Q = euclidian_distance(Vec, Clus, 0),
     math:sqrt(Q).
@@ -139,6 +139,7 @@ euclidian_distance([{C1, V1} | R1], [{C2, V2} | R2], Q)
     R = (0 - V2) * (0 - V2),
     euclidian_distance([{C1, V1} | R1], R2, Q + R).
 
+-spec create_random_cluster([A]) -> kmeans_vector(A).
 create_random_cluster([]) -> [];
 create_random_cluster([X | Dims]) ->
     R = crypto:rand_uniform(0, 1000*1000*1000) / (1000 * 1000 * 1000),
@@ -153,7 +154,7 @@ initialize_clusters(Bucket, N) ->
     create_clusters(N, Dimensions).
 
 kmeans_iterate(C, Bucket, Clusters, N) when length(Clusters) < N ->
-    %% If nobody are sorted into a cluster, reset it and try again
+    %% If nobody are sorted into a cluster, reset that cluster and try again
     NewCls = create_clusters(Bucket, N - length(Clusters)),
     kmeans_iterate(C, Bucket, NewCls ++ Clusters, N);
 kmeans_iterate(C, Bucket, Clusters, N) ->
@@ -167,13 +168,13 @@ kmeans_iterate(C, Bucket, Clusters, N) ->
 	    kmeans_iterate(C, Bucket, NewClusters, N)
     end.
 
--spec kmeans_difference([kmeans_vector()],
-			[kmeans_vector()]) -> float().
+-spec kmeans_difference([kmeans_vector(A)],
+			[kmeans_vector(A)]) -> float().
 kmeans_difference(Old, New) ->
     lists:sum([euclidian_distance(V1, V2) || {V1, V2} <- lists:zip(Old, New)]).
 
--spec kmeans_step(pid(), term(), [{integer(), kmeans_vector()}]) ->
-			 [{integer(), kmeans_vector()}].
+-spec kmeans_step(pid(), term(), [{integer(), kmeans_vector(A)}]) ->
+			 [{integer(), kmeans_vector(A)}].
 kmeans_step(C, Bucket, Clusters) ->
     {ok, [{1, NewClusters}]} =
 	riakc_pb_socket:mapred_bucket(
@@ -183,10 +184,11 @@ kmeans_step(C, Bucket, Clusters) ->
 	    [Clusters], false},
 	   {reduce, {modfun, gain_kmeans, red_calc_new_clusters},
 	    undefined, true}]),
+    ?DEBUG(['m/r', NewClusters]),
     step_post_process(NewClusters).
 
--spec step_post_process([{integer(), integer(), kmeans_vector()}]) ->
-			       [{integer(), kmeans_vector()}].
+-spec step_post_process([{integer(), integer(), kmeans_vector(term())}]) ->
+			       [{integer(), kmeans_vector(term())}].
 step_post_process(NewClusters) ->
     NC = lists:keysort(1, NewClusters),
     F = fun(Count, Vec) ->
