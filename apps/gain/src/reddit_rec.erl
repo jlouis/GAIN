@@ -23,19 +23,26 @@ read_file(FName) ->
     {ok, IO} = file:open(FName, [read, raw, {read_ahead, 8192}]),
     N = process_lines(RC, "foo", [{fake, {0,0}}], IO, 0),
     riakc_pb_socket:delete(RC, ?BUCKET, <<"foo">>),
+    riakc_pb_socket:stop(RC),
     {ok, N}.
 
 dimensions() ->
     {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    gain_kmeans:find_dimensions(RC, ?BUCKET).
+    R = gain_kmeans:find_dimensions(RC, ?BUCKET),
+    riakc_pb_socket:stop(RC),
+    R.
 
 keys() ->
     {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    riakc_pb_socket:list_keys(RC, ?BUCKET).
+    Ks = riakc_pb_socket:list_keys(RC, ?BUCKET),
+    riakc_pb_socket:stop(RC),
+    Ks.
 
 kmeans() ->
     {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    gain_kmeans:kmeans(RC, ?BUCKET, 5).
+    R = gain_kmeans:kmeans(RC, ?BUCKET, 5),
+    riakc_pb_socket:stop(RC),
+    R.
 
 skew([]) -> [];
 skew([{_SubReddit, {Ups, Downs}} | Rest]) when Ups + Downs < 3 -> skew(Rest);
