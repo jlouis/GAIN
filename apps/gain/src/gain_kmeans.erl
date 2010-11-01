@@ -182,7 +182,8 @@ kmeans_difference(Old, New) ->
 
 kmeans_difference([], [], A) -> A;
 kmeans_difference([V1 | R1], [V2 | R2], A) ->
-    kmeans_difference(R1, R2, A + euclidian_distance(V1, V2));
+    ED = euclidian_distance(V1, V2),
+    kmeans_difference(R1, R2, A + ED * ED);
 %% If this happens, force the next iteration
 kmeans_difference([], L, A) ->
     A + (?STOP_EPSILON + 1) * length(L);
