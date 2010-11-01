@@ -178,7 +178,16 @@ kmeans_iterate(C, Bucket, Clusters, N) ->
 -spec kmeans_difference([kmeans_vector(A)],
 			[kmeans_vector(A)]) -> float().
 kmeans_difference(Old, New) ->
-    lists:sum([euclidian_distance(V1, V2) || {V1, V2} <- lists:zip(Old, New)]).
+    kmeans_difference(Old, New, 0.0).
+
+kmeans_difference([], [], A) -> A;
+kmeans_difference([V1 | R1], [V2 | R2], A) ->
+    kmeans_difference(R1, R2, A + euclidian_distance(V1, V2));
+%% If this happens, force the next iteration
+kmeans_difference([], L, A) ->
+    A + (?STOP_EPSILON + 1) * length(L);
+kmeans_difference(L, [], A) ->
+    A + (?STOP_EPSILON + 1) * length(L).
 
 -spec kmeans_step(pid(), term(), [{integer(), kmeans_vector(A)}]) ->
 			 [{integer(), kmeans_vector(A)}].
