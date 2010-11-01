@@ -4,6 +4,11 @@
    system. From here, we need to run more tests to make sure it works
    as intended.
 
+* Move the sparse vector code into an 'svec' module
+   The kmeans code has spawned quite some vector processing code. It
+   would be smart to move this into its own module so we can reap the
+   benefits in other modules as well.
+
 * Look into implmenting canopy clustering
    Canopy clustering looks quite simple to implement. We should write
    an implementation of this.
