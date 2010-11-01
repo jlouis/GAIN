@@ -29,7 +29,7 @@
 -type kmeans_vector(A) :: [{A, float()}].
 -spec kmeans(pid(), binary(), integer()) -> kmeans_vector(term()).
 kmeans(C, Bucket, N) ->
-    Clusters = initialize_clusters(Bucket, N),
+    Clusters = initialize_clusters(C, Bucket, N),
     kmeans_iterate(C, Bucket, Clusters, N).
 
 %% @doc For a row Object, return the column names for that row
@@ -155,13 +155,14 @@ create_clusters(0, _Dims) -> [];
 create_clusters(N, Dims) when N > 0 ->
     [create_random_cluster(Dims) | create_clusters(N-1, Dims)].
 
-initialize_clusters(Bucket, N) ->
-    Dimensions = find_dimensions(Bucket),
+initialize_clusters(RC, Bucket, N) ->
+    Dimensions = find_dimensions(RC, Bucket),
     create_clusters(N, Dimensions).
 
 kmeans_iterate(C, Bucket, Clusters, N) when length(Clusters) < N ->
     %% If nobody are sorted into a cluster, reset that cluster and try again
-    NewCls = create_clusters(Bucket, N - length(Clusters)),
+    %% TODO: Store the dimensions and reuse, this might end up being expensive.
+    NewCls = initialize_clusters(C, Bucket, N - length(Clusters)),
     kmeans_iterate(C, Bucket, NewCls ++ Clusters, N);
 kmeans_iterate(C, Bucket, Clusters, N) ->
     {T, NewClusters} =
@@ -190,8 +191,7 @@ kmeans_step(C, Bucket, Clusters) ->
 	    [Clusters], false},
 	   {reduce, {modfun, gain_kmeans, red_calc_new_clusters},
 	    undefined, true}]),
-    ?DEBUG(['m/r', NewClusters]),
-    step_post_process(NewClusters).
+     step_post_process(NewClusters).
 
 -spec step_post_process([{integer(), integer(), kmeans_vector(term())}]) ->
 			       [{integer(), kmeans_vector(term())}].
@@ -202,8 +202,7 @@ step_post_process(NewClusters) ->
 	end,
     [F(Cnt, Vec) || {_, Cnt, Vec} <- NC].
 
-find_dimensions(Bucket) ->
-    {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
+find_dimensions(RC, Bucket) ->
     {ok, [{1, [Set]}]} =
 	riakc_pb_socket:mapred_bucket(
 	  RC, Bucket,
