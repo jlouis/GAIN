@@ -21,9 +21,9 @@ new_term(Bucket, Key, Value) ->
 read_file(FName) ->
     {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
     {ok, IO} = file:open(FName, [read, raw, {read_ahead, 8192}]),
-    process_lines(RC, "foo", [{fake, {0,0}}], IO),
+    N = process_lines(RC, "foo", [{fake, {0,0}}], IO, 0),
     riakc_pb_socket:delete(RC, ?BUCKET, <<"foo">>),
-    ok.
+    {ok, N}.
 
 dimensions() ->
     {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
@@ -51,11 +51,11 @@ store(RC, Key, Val) ->
 update_affinities(Vote, {Ups, Downs}) when Vote == 1 -> {Ups+1, Downs};
 update_affinities(Vote, {Ups, Downs}) when Vote == -1 -> {Ups, Downs+1}.
 
-process_lines(RC, LastUser, Rs = [{LastSubReddit, UpsDowns} | Reddits], IO) ->
+process_lines(RC, LastUser, Rs = [{LastSubReddit, UpsDowns} | Reddits], IO, N) ->
     case file:read_line(IO) of
 	eof ->
 	    ok = store(RC, LastUser, lists:reverse(skew(Rs))),
-	    done;
+	    N;
 	{ok, L} ->
 	    {Key, Subreddit, Vote} = parse_line(L),
 	    case Key == LastUser of
@@ -65,19 +65,22 @@ process_lines(RC, LastUser, Rs = [{LastSubReddit, UpsDowns} | Reddits], IO) ->
 			    process_lines(RC, LastUser,
 					  [{LastSubReddit,
 					    update_affinities(Vote, UpsDowns)} | Reddits],
-					  IO);
+					  IO,
+					  N+1);
 			false ->
 			    process_lines(RC, LastUser,
 					  [{Subreddit,
 					    update_affinities(Vote, {0,0})} | Rs],
-					  IO)
+					  IO,
+					  N+1)
 		    end;
 		false ->
 		    ok = store(RC, LastUser, lists:reverse(skew(Rs))),
 		    process_lines(RC, Key,
 				  [{Subreddit,
 				    update_affinities(Vote, {0,0})}],
-				  IO)
+				  IO,
+				  N+1)
 	    end
     end.
 
