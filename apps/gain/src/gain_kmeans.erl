@@ -28,9 +28,8 @@
 %% @end
 -type kmeans_vector(A) :: [{A, float()}].
 -spec kmeans(pid(), binary(), integer()) -> kmeans_vector(term()).
-kmeans(C, Bucket, N) ->
-    Clusters = initialize_clusters(C, Bucket, N),
-    kmeans_iterate(C, Bucket, Clusters, N).
+kmeans(C, Bucket, K) ->
+    kmeans_iterate(C, Bucket, [], K).
 
 %% @doc For a row Object, return the column names for that row
 %%  Select the column names and return them as a set
@@ -159,12 +158,11 @@ initialize_clusters(RC, Bucket, N) ->
     Dimensions = find_dimensions(RC, Bucket),
     create_clusters(N, Dimensions).
 
-kmeans_iterate(C, Bucket, Clusters, N) when length(Clusters) < N ->
-    %% If nobody are sorted into a cluster, reset that cluster and try again
-    %% TODO: Store the dimensions and reuse, this might end up being expensive.
-    NewCls = initialize_clusters(C, Bucket, N - length(Clusters)),
-    kmeans_iterate(C, Bucket, NewCls ++ Clusters, N);
-kmeans_iterate(C, Bucket, Clusters, N) ->
+kmeans_iterate(C, Bucket, Clusters, K) when length(Clusters) < K ->
+    ?DEBUG([cluster_reset]),
+    NewCls = initialize_clusters(C, Bucket, K),
+    kmeans_iterate(C, Bucket, NewCls, K);
+kmeans_iterate(C, Bucket, Clusters, K) ->
     {T, NewClusters} =
 	timer:tc(gain_kmeans, kmeans_step, [C, Bucket, Clusters]),
     case kmeans_difference(Clusters, NewClusters) of
@@ -172,7 +170,7 @@ kmeans_iterate(C, Bucket, Clusters, N) ->
 	    NewClusters;
 	F ->
 	    ?DEBUG([iterating, [{time, T / (1000*1000)}, {distance, F}]]),
-	    kmeans_iterate(C, Bucket, NewClusters, N)
+	    kmeans_iterate(C, Bucket, NewClusters, K)
     end.
 
 -spec kmeans_difference([kmeans_vector(A)],
