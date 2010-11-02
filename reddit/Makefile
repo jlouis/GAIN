@@ -1,6 +1,6 @@
 .PHONY: all clean run-R
 
-SMALLCOUNT=2000
+SMALLCOUNT=5000
 VOTES=votes.dump
 
 all: affinities.erl.dump affinities.erl.small.dump
