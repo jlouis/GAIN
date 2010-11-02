@@ -60,7 +60,7 @@ app.
 
 At this point, try to execute the command
 
-     reddit_rec:read_file("reddit/affinities.erl.dump").
+     reddit_rec:read_file("reddit/affinities.erl.small.dump").
 
 in the erlang shell to dump the reddit data in a bucket
 <<"affinities">> inside riak. At the moment, this where we are.
@@ -106,3 +106,13 @@ assigning values in the N-dimenional space I^N where I is the interval
 by a value less than some small epsilon.
 
 This idea has been implemented in *gain_kmeans.erl*.
+
+### Testing
+
+Assume the data above has been loaded from reddit into the bucket
+*<<"affinities">>*. Then we can ask for a kmeans run on these data via
+the command
+
+     reddit_rec:kmeans().
+
+which will try to run a K-means computation on the reddit data.

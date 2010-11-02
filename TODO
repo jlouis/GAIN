@@ -1,8 +1,14 @@
-
 * Carry out testing of the k-means code
    We now have some kmeans code, and a decent code coverage of the
    system. From here, we need to run more tests to make sure it works
    as intended.
+
+* K-means cluster initialization needs some TLC
+   Our code is often cycling since a cluster is never hit by any
+   element. We ought to make a permanent fix to this problem as it is
+   very often it cycles infinitely. At the moment we just start over
+   and over. Convergence is very fast as soon as we hit all
+   clusters. Methods for solving this is needed.
 
 * Move the sparse vector code into an 'svec' module
    The kmeans code has spawned quite some vector processing code. It
