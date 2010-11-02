@@ -19,6 +19,15 @@ basic instructions which will create an embedded release in the rel
 subdirectory. At the moment we simply then start a riak node at
 riak@127.0.0.1, like their hints suggest.
 
+There is one specific configuration parameter that has to be set at
+the moment on riak. This is the following:
+
+      {vnode_cache_entries, 0},
+
+which disables the riak-internal LRU cache completely. We have seen
+a number of problems with this internal caching system, so we recommend
+it to be turned off at the time being.
+
 ## Getting the reddit raw data.
 
 For now, see the README.md file in the reddit/ subdirectory. Then run
