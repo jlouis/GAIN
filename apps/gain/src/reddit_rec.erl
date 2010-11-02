@@ -40,7 +40,7 @@ keys() ->
 
 kmeans() ->
     {ok, RC} = riakc_pb_socket:start_link("127.0.0.1", 8087),
-    R = gain_kmeans:kmeans(RC, ?BUCKET, 5),
+    R = gain_kmeans:kmeans(RC, ?BUCKET, 15),
     riakc_pb_socket:stop(RC),
     R.
 
