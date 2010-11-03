@@ -24,7 +24,7 @@ rel: compile
 	./rebar compile generate
 
 relclean:
-	rm -fr rel/dataminerl
+	rm -fr rel/gain
 
 run:
 	rel/dataminerl/erts-5.8.2/bin/erl -pa ebin
